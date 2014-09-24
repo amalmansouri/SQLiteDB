@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 RookSoft Pte. Ltd. All rights reserved.
 //
 
-import UIKit
+import AppKit
 
 extension String {
 	func positionOf(sub:String)->Int {
