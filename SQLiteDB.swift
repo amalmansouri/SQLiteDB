@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import UIKit
+import AppKit
 
 let SQLITE_DATE = SQLITE_NULL + 1
 
@@ -31,7 +31,7 @@ let SQLITE_DATE = SQLITE_NULL + 1
 				return value as String
 			case SQLITE_BLOB:
 				let str = NSString(data:value as NSData, encoding:NSUTF8StringEncoding)
-				return str
+				return str!
 			case SQLITE_NULL:
 				return ""
 			case SQLITE_DATE:
@@ -51,7 +51,7 @@ let SQLITE_DATE = SQLITE_NULL + 1
 				let str = value as NSString
 				return str.integerValue
 			case SQLITE_BLOB:
-				let str = NSString(data:value as NSData, encoding:NSUTF8StringEncoding)
+                let str:NSString = NSString(data:value as NSData, encoding:NSUTF8StringEncoding)!
 				return str.integerValue
 			case SQLITE_NULL:
 				return 0
@@ -70,7 +70,7 @@ let SQLITE_DATE = SQLITE_NULL + 1
 				let str = value as NSString
 				return str.doubleValue
 			case SQLITE_BLOB:
-				let str = NSString(data:value as NSData, encoding:NSUTF8StringEncoding)
+                let str: NSString = NSString(data:value as NSData, encoding:NSUTF8StringEncoding)!
 				return str.doubleValue
 			case SQLITE_NULL:
 				return 0.0
@@ -116,7 +116,7 @@ let SQLITE_DATE = SQLITE_NULL + 1
 				let str = NSString(data:value as NSData, encoding:NSUTF8StringEncoding)
 				let fmt = NSDateFormatter()
 				fmt.dateFormat = "yyyy-MM-dd HH:mm:ss"
-				return fmt.dateFromString(str)
+				return fmt.dateFromString(str!)
 			case SQLITE_NULL:
 				return nil
 			case SQLITE_DATE:
@@ -144,7 +144,7 @@ let SQLITE_DATE = SQLITE_NULL + 1
 
 // MARK:- SQLiteDB Class - Does all the work
 @objc class SQLiteDB {
-	let DB_NAME = "data.db"
+	let DB_NAME = "FileSize.sqlite"
 	let QUEUE_LABLE = "SQLiteDB"
 	var db:COpaquePointer = nil
 	var queue:dispatch_queue_t
@@ -256,8 +256,15 @@ let SQLITE_DATE = SQLITE_NULL + 1
 	// Show alert with either supplied message or last error
 	func alert(msg:String) {
 		dispatch_async(dispatch_get_main_queue()) {
-			let alert = UIAlertView(title: "SQLiteDB", message:msg, delegate: nil, cancelButtonTitle: "OK")
-			alert.show()
+            var alert = NSAlert()
+            alert.addButtonWithTitle("Ok")
+            alert.messageText = "SQLiteDB"
+            alert.informativeText = msg
+            alert.alertStyle = NSAlertStyle.WarningAlertStyle
+            
+            if (alert.runModal() == NSAlertFirstButtonReturn) {
+            
+            }
 		}
 	}
 
@@ -394,6 +401,7 @@ let SQLITE_DATE = SQLITE_NULL + 1
 			// Next row
 			result = sqlite3_step(stmt)
 		}
+    
 		sqlite3_finalize(stmt)
 		return rows
 	}
@@ -477,7 +485,8 @@ let SQLITE_DATE = SQLITE_NULL + 1
 			// Is this a text date
 			let txt = UnsafePointer<Int8>(sqlite3_column_text(stmt, index))
 			if txt != nil {
-				let buf = NSString(CString:txt, encoding:NSUTF8StringEncoding) as NSString
+                let buf:NSString = NSString(CString:txt, encoding:NSUTF8StringEncoding)!
+            
 				let set = NSCharacterSet(charactersInString: "-:")
 				let range = buf.rangeOfCharacterFromSet(set)
 				if range.location != NSNotFound {
